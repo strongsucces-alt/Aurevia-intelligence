@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Leak Calculator | Aurevia Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --aurevia-navy: #002D5B;
+            --aurevia-gold: #D4AF37;
+            --aurevia-white: #FFFFFF;
+            --aurevia-light-gray: #F4F7FA;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--aurevia-light-gray);
+            color: var(--aurevia-navy);
+        }
+        .bg-navy { background-color: var(--aurevia-navy); }
+        .text-gold { color: var(--aurevia-gold); }
+        .bg-gold { background-color: var(--aurevia-gold); }
+        .border-gold { border-color: var(--aurevia-gold); }
+        
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--aurevia-gold);
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .cta-button {
+            transition: all 0.3s ease;
+        }
+        .cta-button:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-12 px-4">
+
+    <div class="max-w-4xl w-full">
+        <!-- Logo/Header Placeholder -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-2">Lead Leak Calculator</h1>
+            <p class="text-lg opacity-70">Bereken hoeveel omzet je laat liggen door trage opvolging.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Inputs Section -->
+            <div class="card p-8 space-y-6">
+                <h2 class="text-xl font-bold border-b pb-4 mb-4">Jouw Gegevens</h2>
+                
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Aantal leads per maand</label>
+                    <input type="number" id="leads" value="50" class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-navy outline-none transition">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Gemiddelde orderwaarde (€)</label>
+                    <input type="number" id="aov" value="2500" class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-navy outline-none transition">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Huidige geschatte reactietijd</label>
+                    <input type="range" id="response-slider" min="1" max="5" step="1" value="4" class="mb-2">
+                    <div class="flex justify-between text-xs font-medium text-gray-500">
+                        <span class="w-16 text-center">&lt;5 min</span>
+                        <span class="w-16 text-center">5-30 min</span>
+                        <span class="w-16 text-center">30-60 min</span>
+                        <span class="w-16 text-center">&gt;2 uur</span>
+                        <span class="w-16 text-center">&gt;1 dag</span>
+                    </div>
+                </div>
+
+                <div class="pt-4 space-y-4">
+                    <details class="text-sm text-gray-500 cursor-pointer">
+                        <summary class="hover:text-navy">Geavanceerde instellingen</summary>
+                        <div class="mt-4 space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold mb-1">Conv. bij opvolging &lt;5 min (%)</label>
+                                <input type="number" id="conv-fast" value="40" class="w-full px-3 py-2 rounded border border-gray-200 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold mb-1">Conv. bij opvolging &gt;30 min (%)</label>
+                                <input type="number" id="conv-slow" value="15" class="w-full px-3 py-2 rounded border border-gray-200 outline-none">
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="flex flex-col gap-6">
+                <div class="card bg-navy text-white p-8 flex flex-col justify-center relative overflow-hidden">
+                    <!-- Decorative element -->
+                    <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-gold opacity-10 rounded-full"></div>
+                    
+                    <h2 class="text-lg font-semibold mb-2 opacity-80 uppercase tracking-wider">Gemiste Omzet per Maand</h2>
+                    <div class="text-5xl font-bold text-gold mb-6" id="monthly-leak">€ 0</div>
+                    
+                    <h2 class="text-sm font-semibold mb-1 opacity-60 uppercase tracking-wider">Gemiste Omzet per Jaar</h2>
+                    <div class="text-3xl font-bold" id="yearly-leak">€ 0</div>
+                </div>
+
+                <div class="card p-6 border-l-4 border-gold bg-white">
+                    <h3 class="font-bold text-lg mb-2">Waarom dit gebeurt</h3>
+                    <p class="text-sm leading-relaxed text-gray-600">
+                        Wanneer een lead niet binnen 5 minuten wordt opgevolgd, daalt de kans op een succesvolle conversie met maar liefst <span class="font-bold text-navy">80%</span>. 
+                        Met de AI-systemen van Aurevia reageer je <span class="font-bold">altijd direct</span>, 24/7.
+                    </p>
+                </div>
+
+                <a href="../index.html#contact" class="cta-button bg-gold text-white text-center py-4 rounded-xl font-bold text-lg shadow-lg">
+                    Plan een gratis AI-audit
+                </a>
+            </div>
+        </div>
+
+        <footer class="mt-16 text-center text-gray-400 text-sm">
+            &copy; 2026 Aurevia Intelligence. Practical AI that delivers results.
+        </footer>
+    </div>
+
+    <script>
+        const leadsInput = document.getElementById('leads');
+        const aovInput = document.getElementById('aov');
+        const slider = document.getElementById('response-slider');
+        const convFastInput = document.getElementById('conv-fast');
+        const convSlowInput = document.getElementById('conv-slow');
+        
+        const monthlyDisplay = document.getElementById('monthly-leak');
+        const yearlyDisplay = document.getElementById('yearly-leak');
+
+        function updateCalculations() {
+            const leads = parseFloat(leadsInput.value) || 0;
+            const aov = parseFloat(aovInput.value) || 0;
+            const convFast = (parseFloat(convFastInput.value) || 40) / 100;
+            const convSlow = (parseFloat(convSlowInput.value) || 15) / 100;
+            
+            const sliderValue = parseInt(slider.value);
+            
+            let currentConv;
+            // Mapping slider values to estimated conversion rates based on benchmarks
+            switch(sliderValue) {
+                case 1: currentConv = convFast; break; // <5 min
+                case 2: currentConv = (convFast + convSlow) / 1.5; break; // 5-30 min (~30% approx if fast is 40 and slow is 15)
+                case 3: currentConv = convSlow; break; // 30-60 min
+                case 4: currentConv = convSlow * 0.6; break; // >2 uur
+                case 5: currentConv = convSlow * 0.3; break; // >1 dag
+                default: currentConv = convSlow;
+            }
+
+            const potentialRevenue = leads * convFast * aov;
+            const estimatedRevenue = leads * currentConv * aov;
+            const missedRevenue = potentialRevenue - estimatedRevenue;
+            
+            const monthlyLeak = Math.max(0, Math.round(missedRevenue));
+            const yearlyLeak = monthlyLeak * 12;
+
+            monthlyDisplay.innerText = `€ ${monthlyLeak.toLocaleString('nl-NL')}`;
+            yearlyDisplay.innerText = `€ ${yearlyLeak.toLocaleString('nl-NL')}`;
+        }
+
+        [leadsInput, aovInput, slider, convFastInput, convSlowInput].forEach(el => {
+            el.addEventListener('input', updateCalculations);
+        });
+
+        // Initial run
+        updateCalculations();
+    </script>
+</body>
+</html>

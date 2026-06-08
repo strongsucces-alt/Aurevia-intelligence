@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Leak Calculator | Aurevia Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+        }
+        .aurevia-blue { color: #002D5B; }
+        .bg-aurevia-blue { background-color: #002D5B; }
+        .aurevia-gold { color: #D4AF37; }
+        .bg-aurevia-gold { background-color: #D4AF37; }
+        .border-aurevia-gold { border-color: #D4AF37; }
+        .focus-ring-gold:focus { ring-color: #D4AF37; }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #D4AF37;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        
+        .result-card {
+            transition: all 0.3s ease;
+        }
+        .result-card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="py-12 px-4">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold aurevia-blue mb-4">Lead Leak Calculator</h1>
+            <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+                Ontdek hoeveel omzet je maandelijks laat liggen door trage opvolging of gemiste leads.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Form Side -->
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                <h2 class="text-xl font-bold aurevia-blue mb-6 border-b pb-4">Jouw Gegevens</h2>
+                
+                <div class="space-y-6">
+                    <!-- Leads per maand -->
+                    <div>
+                        <label for="leads" class="block text-sm font-semibold text-gray-700 mb-2">Aantal leads per maand</label>
+                        <input type="number" id="leads" value="50" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                    </div>
+
+                    <!-- Gemiddelde orderwaarde -->
+                    <div>
+                        <label for="aov" class="block text-sm font-semibold text-gray-700 mb-2">Gemiddelde orderwaarde (€)</label>
+                        <input type="number" id="aov" value="2500" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                    </div>
+
+                    <!-- % Gemiste leads -->
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label for="leak" class="block text-sm font-semibold text-gray-700">% Gemiste / onbeantwoorde leads</label>
+                            <span id="leak-value" class="text-aurevia-gold font-bold">25%</span>
+                        </div>
+                        <input type="range" id="leak" min="0" max="100" value="25" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <p class="text-xs text-gray-400 mt-2 italic">* Leads die niet worden opgevolgd of pas na 24+ uur.</p>
+                    </div>
+
+                    <!-- Reactietijd -->
+                    <div>
+                        <label for="response" class="block text-sm font-semibold text-gray-700 mb-2">Huidige gemiddelde reactietijd</label>
+                        <select id="response" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white">
+                            <option value="1">Binnen 5 minuten</option>
+                            <option value="0.6">5 - 30 minuten</option>
+                            <option value="0.3">30 min - 4 uur</option>
+                            <option value="0.1" selected>> 4 uur</option>
+                            <option value="0.05">Volgende dag of later</option>
+                        </select>
+                    </div>
+
+                    <!-- Conversie rate (hidden default 20%) -->
+                    <input type="hidden" id="conv" value="20">
+                </div>
+            </div>
+
+            <!-- Results Side -->
+            <div class="space-y-6">
+                <div class="bg-aurevia-blue p-8 rounded-2xl shadow-lg text-white relative overflow-hidden">
+                    <div class="absolute -right-12 -top-12 w-48 h-48 bg-white opacity-5 rounded-full"></div>
+                    
+                    <h2 class="text-xl font-bold mb-4">Jouw Maandelijkse Verlies</h2>
+                    <div class="text-5xl font-bold mb-2">€ <span id="monthly-leak">0</span></div>
+                    <p class="text-blue-100 text-sm opacity-80">Direct misgelopen omzet per maand</p>
+                    
+                    <div class="mt-8 pt-8 border-t border-blue-800">
+                        <h3 class="text-lg font-semibold mb-1">Jaarlijks Verlies</h3>
+                        <div class="text-3xl font-bold text-aurevia-gold">€ <span id="yearly-leak">0</span></div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 result-card">
+                    <div class="flex items-center mb-4">
+                        <div class="p-2 bg-yellow-50 rounded-lg mr-3 text-yellow-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <h3 class="font-bold aurevia-blue">Wist je dat?</h3>
+                    </div>
+                    <p class="text-sm text-gray-600 leading-relaxed" id="insight-text">
+                        Kansen op conversie nemen met <strong>80%</strong> af als je niet binnen 5 minuten reageert op een nieuwe aanvraag.
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-aurevia-gold result-card border-2">
+                    <h3 class="font-bold aurevia-blue mb-2">Dicht het lek met Aurevia</h3>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Onze AI-receptionisten reageren 24/7 binnen seconden, zodat je nooit meer een lead verliest.
+                    </p>
+                    <a href="./index.html#contact" class="inline-block w-full text-center py-3 bg-aurevia-gold text-white font-bold rounded-lg hover:bg-yellow-600 transition-colors">
+                        Vraag een Gratis AI-Audit aan
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-12 text-center text-gray-400 text-sm">
+            &copy; 2026 Aurevia Intelligence. Praktische AI die resultaat oplevert.
+        </footer>
+    </div>
+
+    <script>
+        const leadsInput = document.getElementById('leads');
+        const aovInput = document.getElementById('aov');
+        const leakSlider = document.getElementById('leak');
+        const leakValue = document.getElementById('leak-value');
+        const responseSelect = document.getElementById('response');
+        const convInput = document.getElementById('conv');
+        
+        const monthlyDisplay = document.getElementById('monthly-leak');
+        const yearlyDisplay = document.getElementById('yearly-leak');
+        const insightText = document.getElementById('insight-text');
+
+        function calculate() {
+            const leads = parseFloat(leadsInput.value) || 0;
+            const aov = parseFloat(aovInput.value) || 0;
+            const leakPct = parseFloat(leakSlider.value) / 100;
+            const responseMultiplier = parseFloat(responseSelect.value);
+            const convRate = parseFloat(convInput.value) / 100;
+
+            // Update UI for slider
+            leakValue.textContent = (leakPct * 100).toFixed(0) + '%';
+
+            // Calculate missed leads
+            const missedLeads = leads * leakPct;
+            
+            // Calculate missed sales
+            // We assume that the conversion rate is for 'good' follow-up.
+            // If they are missed/unhandled, they are 0% converted.
+            // But if they WERE handled well, they would have converted at convRate * responseMultiplier.
+            // Actually, let's keep it simple:
+            // Missed Revenue = (Leads * Missed %) * ConvRate * AOV
+            // And then show the impact of response time.
+            
+            const monthlyLeak = Math.round(missedLeads * convRate * aov);
+            const yearlyLeak = monthlyLeak * 12;
+
+            // Format numbers
+            monthlyDisplay.textContent = monthlyLeak.toLocaleString('nl-NL');
+            yearlyDisplay.textContent = yearlyLeak.toLocaleString('nl-NL');
+
+            // Update insight text based on response time
+            if (responseMultiplier === 1) {
+                insightText.innerHTML = "Je reageert supersnel! Toch kun je door 24/7 bereikbaarheid van een AI-receptionist nog meer leads vangen buiten kantooruren.";
+            } else if (responseMultiplier < 0.5) {
+                insightText.innerHTML = "Jouw huidige reactietijd zorgt voor een conversieverlies van ca. <strong>70% tot 90%</strong> ten opzichte van directe opvolging.";
+            } else {
+                insightText.innerHTML = "Door binnen 5 minuten te reageren, verhoog je de kans op een afspraak met factor <strong>21x</strong> vergeleken met reageren na 30 minuten.";
+            }
+        }
+
+        // Add event listeners
+        [leadsInput, aovInput, leakSlider, responseSelect].forEach(input => {
+            input.addEventListener('input', calculate);
+        });
+
+        // Initial calculation
+        calculate();
+    </script>
+</body>
+</html>
